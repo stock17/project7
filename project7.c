@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
 
@@ -88,70 +89,39 @@ int main (int argc, char* argv[])
     // Flag for exit
     int close_requested = 0;
     
-    // Flags for keys
-    int up = 0;
-    int down = 0;
-    int left = 0;
-    int right = 0;
-    
-   
     while (!close_requested)
     {
     
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            switch (event.type)
-            {
-                case SDL_QUIT:
-                    close_requested = 1;
-                    break;
-                
-                case SDL_KEYDOWN:
-                    switch (event.key.keysym.scancode)
-                        {
-                            case SDL_SCANCODE_UP:
-                                up = 1;
-                                break;
-                            case SDL_SCANCODE_DOWN:
-                                down = 1;
-                                break;
-                            case SDL_SCANCODE_LEFT:
-                                left = 1;
-                                break;
-                            case SDL_SCANCODE_RIGHT:
-                                right = 1;
-                                break;
-                        }
-                        break;
-                        
-                    case SDL_KEYUP:
-                        switch (event.key.keysym.scancode)
-                        {
-                            case SDL_SCANCODE_UP:
-                                up = 0;
-                                break;
-                            case SDL_SCANCODE_DOWN:
-                                down = 0;
-                                break;
-                            case SDL_SCANCODE_LEFT:
-                                left = 0;
-                                break;
-                            case SDL_SCANCODE_RIGHT:
-                                right = 0;
-                                break;
-                        }
-                        break;
-            
-            }
+            if (event.type == SDL_QUIT)
+                close_requested = 1;                        
         }
         
-        // Velocity
-        x_vel = y_vel = 0;
-        if (up && !down) y_vel = -SPEED;
-        if (!up && down) y_vel = SPEED;
-        if (left && !right) x_vel = -SPEED;
-        if (!left && right) x_vel = SPEED;
+        // Get cursor position
+        int mouse_x, mouse_y;
+        int btns = SDL_GetMouseState(&mouse_x, &mouse_y);
+        
+        int target_x = mouse_x - rect1.w / 2;
+        int target_y = mouse_y - rect1.h / 2;
+        float delta_x = target_x - x_pos;
+        float delta_y = target_y - y_pos;
+        float distance = sqrt(delta_x * delta_x + delta_y * delta_y);
+        
+        if (distance < 5)
+            x_vel = y_vel = 0;
+        else
+        {
+            x_vel = delta_x * SPEED / distance;
+            y_vel = delta_y * SPEED / distance;                        
+        }
+        
+        if (btns && SDL_BUTTON (SDL_BUTTON_LEFT))
+        {
+            x_vel = -x_vel;
+            y_vel = -y_vel;
+        }
         
         // Update sprite position
         x_pos += x_vel / 60;
