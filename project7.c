@@ -5,7 +5,7 @@
 #define WIN_WIDTH 640
 #define WIN_HEIGHT 480
 
-#define SCROLL_SPEED 100
+#define SPEED 300
 
 
 int main (int argc, char* argv[])
@@ -69,29 +69,73 @@ int main (int argc, char* argv[])
         SDL_Quit();
         return 1;
     }
-    
-    
-    
+        
     
     // Struct to save dimensions
     SDL_Rect rect1;
     SDL_QueryTexture(texture1, NULL, NULL, &rect1.w, &rect1.h);
-    rect1.x = (WIN_WIDTH - rect1.w) / 2;
+    rect1.w /= 4;
+    rect1.h /= 4;
     
-    float y_pos = WIN_HEIGHT;
+    // Start in the center
+    float x_pos = (WIN_WIDTH - rect1.w) / 2;
+    float y_pos = (WIN_WIDTH - rect1.h) / 2;
     
-    while (rect1.y >= -rect1.h)
+    // Set up speed
+    float x_vel = SPEED;
+    float y_vel = SPEED;
+    
+    // Flag for exit
+    int close_requested = 0;
+    
+   
+    while (!close_requested)
     {
-        //Clear window
-        SDL_RenderClear(renderer1);
+    
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+                close_requested = 1;
+        }
+        
+        //Screen border touching
+        if (x_pos <= 0) 
+        {
+            x_pos = 0;
+            x_vel = -x_vel;
+        }
+        if (y_pos <= 0) 
+        {
+            y_pos = 0;
+            y_vel = -y_vel;
+        }
+        if (x_pos >= WIN_WIDTH - rect1.w) 
+        {
+            x_pos = WIN_WIDTH - rect1.w;
+            x_vel = -x_vel;
+        }
+        if (y_pos >= WIN_HEIGHT - rect1.h) 
+        {
+            y_pos = WIN_HEIGHT - rect1.h;
+            y_vel = -y_vel;
+        }
+        
+        // Update sprite position
+        x_pos += x_vel / 60;
+        y_pos += y_vel / 60;
+        
+        // Set positions in the struct
+        rect1.x = (int) x_pos;
         rect1.y = (int) y_pos;
         
+        
+        //Clear window
+        SDL_RenderClear(renderer1);
+                
         // Draw the image
         SDL_RenderCopy(renderer1, texture1, NULL, &rect1);
         SDL_RenderPresent(renderer1);
-        
-        // Update position
-        y_pos -= (float) SCROLL_SPEED / 60;
         
         // Wait 1/60 sec
         SDL_Delay(1000/60);    
