@@ -2,6 +2,12 @@
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
 
+#define WIN_WIDTH 640
+#define WIN_HEIGHT 480
+
+#define SCROLL_SPEED 100
+
+
 int main (int argc, char* argv[])
 {
     //SDL initialization
@@ -17,8 +23,8 @@ int main (int argc, char* argv[])
         "Hello!",
         SDL_WINDOWPOS_CENTERED, 
         SDL_WINDOWPOS_CENTERED,
-        640, 
-        480, 
+        WIN_WIDTH, 
+        WIN_HEIGHT, 
         0
     );
     
@@ -42,7 +48,7 @@ int main (int argc, char* argv[])
     }
     
     // Load image in memory
-    SDL_Surface* surface1 = IMG_Load("resources/cloud015.jpg");
+    SDL_Surface* surface1 = IMG_Load("img/star.png");
     if (!surface1)
     {
         printf("Surface error: %s", SDL_GetError());
@@ -64,16 +70,34 @@ int main (int argc, char* argv[])
         return 1;
     }
     
-    //Clear window
-    SDL_RenderClear(renderer1);
     
-    // Draw the image
-    SDL_RenderCopy(renderer1, texture1, NULL, NULL);
-    SDL_RenderPresent(renderer1);
     
-       
-    SDL_Delay(5000);
-
+    
+    // Struct to save dimensions
+    SDL_Rect rect1;
+    SDL_QueryTexture(texture1, NULL, NULL, &rect1.w, &rect1.h);
+    rect1.x = (WIN_WIDTH - rect1.w) / 2;
+    
+    float y_pos = WIN_HEIGHT;
+    
+    while (rect1.y >= -rect1.h)
+    {
+        //Clear window
+        SDL_RenderClear(renderer1);
+        rect1.y = (int) y_pos;
+        
+        // Draw the image
+        SDL_RenderCopy(renderer1, texture1, NULL, &rect1);
+        SDL_RenderPresent(renderer1);
+        
+        // Update position
+        y_pos -= (float) SCROLL_SPEED / 60;
+        
+        // Wait 1/60 sec
+        SDL_Delay(1000/60);    
+    }
+    
+    
     SDL_DestroyTexture(texture1);
     SDL_DestroyRenderer(renderer1);
     SDL_DestroyWindow(window1);
