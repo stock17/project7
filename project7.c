@@ -88,6 +88,12 @@ int main (int argc, char* argv[])
     // Flag for exit
     int close_requested = 0;
     
+    // Flags for keys
+    int up = 0;
+    int down = 0;
+    int left = 0;
+    int right = 0;
+    
    
     while (!close_requested)
     {
@@ -95,40 +101,71 @@ int main (int argc, char* argv[])
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
-                close_requested = 1;
+            switch (event.type)
+            {
+                case SDL_QUIT:
+                    close_requested = 1;
+                    break;
+                
+                case SDL_KEYDOWN:
+                    switch (event.key.keysym.scancode)
+                        {
+                            case SDL_SCANCODE_UP:
+                                up = 1;
+                                break;
+                            case SDL_SCANCODE_DOWN:
+                                down = 1;
+                                break;
+                            case SDL_SCANCODE_LEFT:
+                                left = 1;
+                                break;
+                            case SDL_SCANCODE_RIGHT:
+                                right = 1;
+                                break;
+                        }
+                        break;
+                        
+                    case SDL_KEYUP:
+                        switch (event.key.keysym.scancode)
+                        {
+                            case SDL_SCANCODE_UP:
+                                up = 0;
+                                break;
+                            case SDL_SCANCODE_DOWN:
+                                down = 0;
+                                break;
+                            case SDL_SCANCODE_LEFT:
+                                left = 0;
+                                break;
+                            case SDL_SCANCODE_RIGHT:
+                                right = 0;
+                                break;
+                        }
+                        break;
+            
+            }
         }
         
-        //Screen border touching
-        if (x_pos <= 0) 
-        {
-            x_pos = 0;
-            x_vel = -x_vel;
-        }
-        if (y_pos <= 0) 
-        {
-            y_pos = 0;
-            y_vel = -y_vel;
-        }
-        if (x_pos >= WIN_WIDTH - rect1.w) 
-        {
-            x_pos = WIN_WIDTH - rect1.w;
-            x_vel = -x_vel;
-        }
-        if (y_pos >= WIN_HEIGHT - rect1.h) 
-        {
-            y_pos = WIN_HEIGHT - rect1.h;
-            y_vel = -y_vel;
-        }
+        // Velocity
+        x_vel = y_vel = 0;
+        if (up && !down) y_vel = -SPEED;
+        if (!up && down) y_vel = SPEED;
+        if (left && !right) x_vel = -SPEED;
+        if (!left && right) x_vel = SPEED;
         
         // Update sprite position
         x_pos += x_vel / 60;
         y_pos += y_vel / 60;
-        
+
+        //Screen border touching
+        if (x_pos <= 0) x_pos = 0;
+        if (y_pos <= 0) y_pos = 0;
+        if (x_pos >= WIN_WIDTH - rect1.w) x_pos = WIN_WIDTH - rect1.w;
+        if (y_pos >= WIN_HEIGHT - rect1.h) y_pos = WIN_HEIGHT - rect1.h;
+                
         // Set positions in the struct
         rect1.x = (int) x_pos;
         rect1.y = (int) y_pos;
-        
         
         //Clear window
         SDL_RenderClear(renderer1);
